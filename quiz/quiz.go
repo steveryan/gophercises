@@ -17,9 +17,9 @@ func main() {
 	} else {
 		seconds = 3
 	}
-	correct_answer_ch := make(chan bool)
-	end_quiz_ch := make(chan bool)
-	timer_ch := make(chan bool)
+	correctAnswerCh := make(chan bool)
+	endQuizCh := make(chan bool)
+	timerCh := make(chan bool)
 	// read problems.csv and parse it with csv package
 	csvFile, err := os.Open("problems.csv")
 	defer csvFile.Close()
@@ -32,36 +32,36 @@ func main() {
 	}
 	fmt.Println("Press enter to start the quiz")
 	_ = getInputAndCleanIt()
-	go startTimer(seconds, timer_ch)
-	go askQuestions(lines, correct_answer_ch, end_quiz_ch)
-	total_correct := 0
+	go startTimer(seconds, timerCh)
+	go askQuestions(lines, correctAnswerCh, endQuizCh)
+	totalCorrect := 0
 out:
 	for {
 		select {
-		case <-correct_answer_ch:
-			total_correct++
-		case <-end_quiz_ch:
+		case <-correctAnswerCh:
+			totalCorrect++
+		case <-endQuizCh:
 			break out
-		case <-timer_ch:
+		case <-timerCh:
 			break out
 		}
 	}
-	fmt.Printf("total correct: %d/%d", total_correct, len(lines))
+	fmt.Printf("total correct: %d/%d", totalCorrect, len(lines))
 }
 
-func askQuestions(lines [][]string, correct_answer_ch chan<- bool, end_quiz_ch chan<- bool) {
-	total_correct := 0
+func askQuestions(lines [][]string, correctAnswerCh chan<- bool, endQuizCh chan<- bool) {
+	totalCorrect := 0
 	for _, line := range lines {
 		question := line[0]
 		answer := line[1]
 		fmt.Println("question: ", question)
 		userAnswer := getInputAndCleanIt()
 		if userAnswer == answer {
-			total_correct++
-			correct_answer_ch <- true
+			totalCorrect++
+			correctAnswerCh <- true
 		}
 	}
-	end_quiz_ch <- true
+	endQuizCh <- true
 }
 
 func getInputAndCleanIt() string {
@@ -71,7 +71,7 @@ func getInputAndCleanIt() string {
 	return text
 }
 
-func startTimer(seconds int, timer_ch chan<- bool) {
+func startTimer(seconds int, timerCh chan<- bool) {
 	time.Sleep(time.Duration(seconds) * time.Second)
-	timer_ch <- true
+	timerCh <- true
 }
