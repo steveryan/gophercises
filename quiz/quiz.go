@@ -15,7 +15,7 @@ func main() {
 	if len(os.Args) > 1 {
 		seconds, _ = strconv.Atoi(os.Args[1])
 	} else {
-		seconds = 3
+		seconds = 30
 	}
 	correctAnswerCh := make(chan bool)
 	endQuizCh := make(chan bool)
