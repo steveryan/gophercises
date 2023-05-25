@@ -8,15 +8,13 @@ import (
 )
 
 func main() {
-	s := `<a href="/dog">
-  <span>Something in a span</span>
-  Text not in a span
-  <b>Bold text!</b>
+	s := `<a href="#">
+  Something here <a href="/dog">nested dog link</a>
 </a>`
 
 	tkn := html.NewTokenizer(strings.NewReader(s))
 	links := make(map[string]string)
-	var currentLink string
+	currentLinks := make([]string, 0)
 loop:
 	for {
 		token := tkn.Next()
@@ -31,19 +29,32 @@ loop:
 						s := a.Val
 						s = strings.ReplaceAll(s, "\n", "")
 						links[s] = ""
-						currentLink = s
+						currentLinks = append(currentLinks, s)
 					}
 				}
 			}
 		case html.TextToken:
-			if currentLink != "" {
+			if len(currentLinks) > 0 {
 				s := tkn.Token().Data
 				s = strings.ReplaceAll(s, "\n", "")
-				links[currentLink] += s
+				for _, v := range currentLinks {
+					links[v] += s
+				}
 			}
 		case html.EndTagToken:
-			if tkn.Token().Data == "a" {
-				currentLink = ""
+			t := tkn.Token()
+			if t.Data == "a" {
+				for _, a := range t.Attr {
+					if a.Key == "href" {
+						s := a.Val
+						s = strings.ReplaceAll(s, "\n", "")
+						for i, v := range currentLinks {
+							if v == s {
+								currentLinks = append(currentLinks[:i], currentLinks[i+1:]...)
+							}
+						}
+					}
+				}
 			}
 		}
 	}
