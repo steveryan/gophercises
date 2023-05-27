@@ -11,7 +11,13 @@ func main() {
 	s := `<a href="#">
   Something here <a href="/dog">nested dog link</a>
 </a>`
+	links := getLinks(s)
+	for k, v := range links {
+		fmt.Printf("Href: %s\nText: %s\n\n", k, v)
+	}
+}
 
+func getLinks(s string) map[string]string {
 	tkn := html.NewTokenizer(strings.NewReader(s))
 	links := make(map[string]string)
 	currentLinks := make([]string, 0)
@@ -58,7 +64,5 @@ loop:
 			}
 		}
 	}
-	for k, v := range links {
-		fmt.Printf("Href: %s\nText: %s\n\n", k, v)
-	}
+	return links
 }
